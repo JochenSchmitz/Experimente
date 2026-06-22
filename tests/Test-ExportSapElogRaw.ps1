@@ -73,7 +73,7 @@ function Test-ExportsRawArchive {
         New-Item -Path $downloads -ItemType Directory -Force | Out-Null
 
         New-SapElogDirectory -Root $sapElogRoot -DateStamp '2024_01_02' -Marker 'old'
-        New-SapElogDirectory -Root $sapElogRoot -DateStamp '2024_01_03' -Marker 'new'
+        New-SapElogDirectory -Root $sapElogRoot -DateStamp '20240103' -Marker 'new'
 
         & $ScriptPath `
             -SapElogRoot $sapElogRoot `
@@ -150,6 +150,12 @@ function Test-FailsForInvalidDirectoryName {
         Assert-True `
             -Condition ($stderr -match 'YYYY_MM_DD') `
             -Message 'Der Fehler fuer ungueltige Verzeichnisnamen ist nicht eindeutig.'
+        Assert-True `
+            -Condition ($stderr -match 'YYYYMMDD') `
+            -Message 'Der Fehler nennt das kompakte Datumsformat YYYYMMDD nicht.'
+        Assert-True `
+            -Condition ($stderr -notmatch 'CategoryInfo') `
+            -Message 'Fehlerausgaben sollen keinen PowerShell-Stacktrace enthalten.'
     }
     finally {
         if (Test-Path -LiteralPath $tempRoot) {

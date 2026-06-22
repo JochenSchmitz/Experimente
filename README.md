@@ -14,6 +14,14 @@ Aufruf unter Windows aus dem Repository:
 powershell -ExecutionPolicy Bypass -File .\scripts\Export-SapElogRaw.ps1
 ```
 
+Wenn nur die Script-Datei in den Downloads-Ordner heruntergeladen wurde:
+
+```powershell
+cd $env:USERPROFILE\Downloads
+Unblock-File .\Export-SapElogRaw.ps1
+.\Export-SapElogRaw.ps1
+```
+
 Oder mit PowerShell 7:
 
 ```powershell
@@ -30,7 +38,12 @@ Das Script erstellt im Downloads-Verzeichnis standardmaessig `RAW.zip`. Darin li
 - `Kippsignale.zip`
   - enthaelt je datiertem Unterverzeichnis `04_Kippsignale_YYYY_MM_DD.csv`
 
-Die Unterverzeichnisse unter `SAP-ELOG` muessen im Format `YYYY_MM_DD` benannt sein.
+Die Unterverzeichnisse unter `SAP-ELOG` muessen als Datum benannt sein. Erlaubt sind diese Formate:
+
+- `YYYYMMDD`, zum Beispiel `20250109`
+- `YYYY_MM_DD`, zum Beispiel `2025_01_09`
+
+In den erzeugten CSV-Dateinamen wird das Datum immer als `YYYY_MM_DD` geschrieben.
 
 Falls der SAP-ELOG-Pfad oder der Ausgabeordner abweicht:
 

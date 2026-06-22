@@ -80,19 +80,49 @@ function Get-DateDirectoryInfos {
     }
 
     foreach ($directory in $directories) {
-        if ($directory.Name -notmatch '^\d{4}_\d{2}_\d{2}$') {
-            throw "Verzeichnisname entspricht nicht dem erwarteten Format YYYY_MM_DD: $($directory.FullName)"
-        }
+        $dateInfo = Convert-DateDirectoryName -DirectoryName $directory.Name -FullPath $directory.FullName
 
         [pscustomobject]@{
             Directory = $directory
-            Date      = [datetime]::ParseExact(
-                $directory.Name,
-                'yyyy_MM_dd',
-                [System.Globalization.CultureInfo]::InvariantCulture
-            )
-            DateStamp = $directory.Name
+            Date      = $dateInfo.Date
+            DateStamp = $dateInfo.DateStamp
         }
+    }
+}
+
+function Convert-DateDirectoryName {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$DirectoryName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FullPath
+    )
+
+    if ($DirectoryName -match '^\d{8}$') {
+        $dateFormat = 'yyyyMMdd'
+    }
+    elseif ($DirectoryName -match '^\d{4}_\d{2}_\d{2}$') {
+        $dateFormat = 'yyyy_MM_dd'
+    }
+    else {
+        throw "Verzeichnisname entspricht nicht dem erwarteten Datumsformat YYYYMMDD oder YYYY_MM_DD: $FullPath"
+    }
+
+    try {
+        $date = [datetime]::ParseExact(
+            $DirectoryName,
+            $dateFormat,
+            [System.Globalization.CultureInfo]::InvariantCulture
+        )
+    }
+    catch {
+        throw "Verzeichnisname ist kein gueltiges Datum: $FullPath"
+    }
+
+    [pscustomobject]@{
+        Date      = $date
+        DateStamp = $date.ToString('yyyy_MM_dd', [System.Globalization.CultureInfo]::InvariantCulture)
     }
 }
 
@@ -129,7 +159,7 @@ function New-ZipFromDirectoryContents {
     }
 
     Compress-Archive `
-        -Path (Join-Path $SourceDirectory '*') `
+        -LiteralPath $files.FullName `
         -DestinationPath $DestinationZip `
         -CompressionLevel Optimal `
         -Force
@@ -255,5 +285,7 @@ try {
 }
 catch {
     [Console]::Error.WriteLine(('Fehler: {0}' -f $_.Exception.Message))
-    throw
+    $global:LASTEXITCODE = 1
+    $host.SetShouldExit(1)
+    return
 }
