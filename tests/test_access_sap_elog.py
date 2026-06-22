@@ -5,6 +5,8 @@ import json
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 
 
@@ -68,9 +70,12 @@ class AccessSapElogTest(unittest.TestCase):
             root = Path(temp_dir)
             (root / "elog.txt").write_text("ok", encoding="utf-8")
 
-            exit_code = access_sap_elog.main(["--path", str(root), "--json"])
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                exit_code = access_sap_elog.main(["--path", str(root), "--json"])
 
         self.assertEqual(exit_code, 0)
+        self.assertEqual(json.loads(stdout.getvalue())[0]["relative_path"], "elog.txt")
 
 
 if __name__ == "__main__":
