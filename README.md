@@ -1,35 +1,66 @@
 # Experimente
 
-## SAP-ELOG-Verzeichnis pruefen
+## SAP-ELOG RAW-Archiv erstellen
 
-Das Script `scripts/access_sap_elog.py` greift standardmaessig auf dieses Verzeichnis zu:
+Das PowerShell-Script `scripts/Export-SapElogRaw.ps1` greift standardmaessig auf dieses Verzeichnis zu:
 
 ```text
 C:\Users\schmitz03\OneDrive - FES Frankfurter Entsorgungs- u. Service GmbH\Dokumente - IMM\General\01_Projekte\02_Experimentieren\05_Schlackeoptimierung\07_Daten\SAP-ELOG
 ```
 
-Aufruf unter Windows:
+Aufruf unter Windows aus dem Repository:
 
 ```powershell
-python scripts\access_sap_elog.py
+powershell -ExecutionPolicy Bypass -File .\scripts\Export-SapElogRaw.ps1
 ```
 
-Rekursive Ausgabe:
+Oder mit PowerShell 7:
 
 ```powershell
-python scripts\access_sap_elog.py --recursive
+pwsh -File .\scripts\Export-SapElogRaw.ps1
 ```
 
-JSON-Ausgabe:
+Das Script erstellt im Downloads-Verzeichnis standardmaessig `RAW.zip`. Darin liegen:
+
+- `01_Stammdaten.csv` aus dem neuesten Unterverzeichnis unter `SAP-ELOG`
+- `Auftragsdaten.zip`
+  - enthaelt je datiertem Unterverzeichnis `02_Auftragsdaten_YYYY_MM_DD.csv`
+- `Waage.zip`
+  - enthaelt je datiertem Unterverzeichnis `03_Waage_YYYY_MM_DD.csv`
+- `Kippsignale.zip`
+  - enthaelt je datiertem Unterverzeichnis `04_Kippsignale_YYYY_MM_DD.csv`
+
+Die Unterverzeichnisse unter `SAP-ELOG` muessen im Format `YYYY_MM_DD` benannt sein.
+
+Falls der SAP-ELOG-Pfad oder der Ausgabeordner abweicht:
 
 ```powershell
-python scripts\access_sap_elog.py --json
+powershell -ExecutionPolicy Bypass -File .\scripts\Export-SapElogRaw.ps1 `
+  -SapElogRoot "C:\Pfad\zum\SAP-ELOG" `
+  -DownloadsDirectory "$env:USERPROFILE\Downloads"
 ```
 
-Falls das Verzeichnis auf einem anderen Rechner anders liegt, kann der Pfad explizit gesetzt werden:
+Der Name des RAW-Archivs kann ebenfalls gesetzt werden:
 
 ```powershell
-python scripts\access_sap_elog.py --path "C:\Pfad\zum\SAP-ELOG"
+powershell -ExecutionPolicy Bypass -File .\scripts\Export-SapElogRaw.ps1 -RawArchiveName "RAW.zip"
 ```
 
-Wenn der Pfad nicht existiert, kein Verzeichnis ist oder nicht gelesen werden kann, beendet sich das Script mit einer Fehlermeldung und Exit-Code `1`.
+Das Script arbeitet bewusst strikt: Wenn ein erwarteter Ordner, eine erwartete CSV-Datei oder ein datierter Ordnername nicht passt, bricht es mit einer Fehlermeldung ab.
+
+### Erwartete Dateien pro datiertem Unterverzeichnis
+
+Jedes Unterverzeichnis unter `SAP-ELOG` muss diese Dateien enthalten:
+
+- `01_Stammdaten.csv`
+- `02_Auftragsdaten.csv`
+- `03_Waage.csv`
+- `04_Kippsignale.csv`
+
+### Tests
+
+Wenn PowerShell 7 (`pwsh`) verfuegbar ist:
+
+```powershell
+pwsh -File .\tests\Test-ExportSapElogRaw.ps1
+```
